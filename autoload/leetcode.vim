@@ -38,7 +38,8 @@ function! s:LoadSessionCookie() abort
        return v:false
     endif
 
-    let success = py3eval('leetcode.load_session_cookie("' . g:leetcode_browser . '")')
+    let args = {'browser': g:leetcode_browser, 'arg_cookie': g:leetcode_cookie}
+    let success = py3eval('leetcode.load_session_cookie(**vim.eval("args"))')
     if success
        echo 'Signed in.'
     endif

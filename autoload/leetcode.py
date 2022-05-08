@@ -157,28 +157,31 @@ def get_progress():
     return data
 
 
-def load_session_cookie(browser):
-    if browser_cookie3 is None:
-        _echoerr('browser_cookie3 not installed: pip3 install browser_cookie3 --user')
-        return False
-    if keyring is None:
-        _echoerr('keyring not installed: pip3 install keyring --user')
-        return False
-
-    session_cookie_raw = keyring.get_password('leetcode.vim', 'SESSION_COOKIE')
-    if session_cookie_raw is None:
-        cookies = getattr(browser_cookie3, browser)(domain_name=LC_BASE.split('/')[-1])
-        for cookie in cookies:
-            if cookie.name == 'LEETCODE_SESSION':
-                session_cookie = cookie
-                session_cookie_raw = pickle.dumps(cookie, protocol=0).decode('utf-8')
-                break
-        else:
-            _echoerr('Leetcode session cookie not found. Please login in browser.')
+def load_session_cookie(browser, arg_cookie):
+    if arg_cookie == '':
+        if browser_cookie3 is None:
+            _echoerr('browser_cookie3 not installed: pip3 install browser_cookie3 --user')
             return False
-        keyring.set_password('leetcode.vim', 'SESSION_COOKIE', session_cookie_raw)
+        if keyring is None:
+            _echoerr('keyring not installed: pip3 install keyring --user')
+            return False
+
+        session_cookie_raw = keyring.get_password('leetcode.vim', 'SESSION_COOKIE')
+        if session_cookie_raw is None:
+            cookies = getattr(browser_cookie3, browser)(domain_name=LC_BASE.split('/')[-1])
+            for cookie in cookies:
+                if cookie.name == 'LEETCODE_SESSION':
+                    session_cookie = cookie
+                    session_cookie_raw = pickle.dumps(cookie, protocol=0).decode('utf-8')
+                    break
+            else:
+                _echoerr('Leetcode session cookie not found. Please login in browser.')
+                return False
+            keyring.set_password('leetcode.vim', 'SESSION_COOKIE', session_cookie_raw)
+        else:
+            session_cookie = pickle.loads(session_cookie_raw.encode('utf-8'))
     else:
-        session_cookie = pickle.loads(session_cookie_raw.encode('utf-8'))
+        session_cookie = requests.cookies.create_cookie('LEETCODE_SESSION', arg_cookie)
 
     global session
     session = requests.Session()
@@ -187,7 +190,8 @@ def load_session_cookie(browser):
     progress = get_progress()
     if progress is None:
         _echoerr('cannot get progress. Please relogin in your browser.')
-        keyring.delete_password('leetcode.vim', 'SESSION_COOKIE')
+        if arg_cookie == '':
+            keyring.delete_password('leetcode.vim', 'SESSION_COOKIE')
         return False
 
     return True
