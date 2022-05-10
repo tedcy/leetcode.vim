@@ -308,7 +308,7 @@ def get_problem(slug):
     return problem
 
 
-def _check_result(submission_id):
+def _check_result(submission_id, result):
     global task_progress
     if _in_task():
         prog_stage = 'Uploading '
@@ -340,31 +340,32 @@ def _check_result(submission_id):
 
         time.sleep(1)
 
-    result = {
-        'answer': r.get('code_answer', []),
-        'runtime': r['status_runtime'],
-        'state': _status_to_name(r['status_code']),
-        'testcase': _split(r.get('input', r.get('last_testcase', ''))),
-        'passed': r.get('total_correct') or 0,
-        'total': r.get('total_testcases') or 0,
-        'error': _split([v for k, v in r.items() if 'error' in k and v])
-    }
+    if r.get('submission_id').find('interpret_expected') == -1:
+        result['answer'] = r.get('code_answer', [])
+        result['runtime'] = r['status_runtime']
+        result['state'] = _status_to_name(r['status_code'])
+        result['testcase'] = _split(r.get('input', r.get('last_testcase', '')))
+        result['passed'] = r.get('total_correct') or 0
+        result['total'] = r.get('total_testcases') or 0
+        result['error'] = _split([v for k, v in r.items() if 'error' in k and v])
 
-    # the keys differs between the result of testing the code and submitting it
-    # for submission judge_type is 'large', and for testing judge_type does not exist
-    if r.get('judge_type') == 'large':
-        result['answer'] = _split(r.get('code_output', ''))
-        result['expected_answer'] = _split(r.get('expected_output', ''))
-        result['stdout'] = _split(r.get('std_output', ''))
-        result['runtime_percentile'] = r.get('runtime_percentile', '')
+        # the keys differs between the result of testing the code and submitting it
+        # for submission judge_type is 'large', and for testing judge_type does not exist
+        if r.get('judge_type') == 'large':
+            result['answer'] = _split(r.get('code_output', ''))
+            result['expected_answer'] = _split(r.get('expected_output', ''))
+            result['stdout'] = _split(r.get('std_output', ''))
+            result['runtime_percentile'] = r.get('runtime_percentile', '')
+        else:
+            # Test states cannot distinguish accepted answers from wrong answers.
+            if result['state'] == 'Accepted':
+                result['state'] = 'Finished'
+            result['stdout'] = _split(r.get('code_output', []))
+            result['expected_answer'] = []
+            result['runtime_percentile'] = r.get('runtime_percentile', '')
+            result['expected_answer'] = r.get('expected_code_answer', [])
     else:
-        # Test states cannot distinguish accepted answers from wrong answers.
-        if result['state'] == 'Accepted':
-            result['state'] = 'Finished'
-        result['stdout'] = _split(r.get('code_output', []))
-        result['expected_answer'] = []
-        result['runtime_percentile'] = r.get('runtime_percentile', '')
-        result['expected_answer'] = r.get('expected_code_answer', [])
+        result['expected_answer'] = r.get('code_answer', [])
     return result
 
 
@@ -391,7 +392,9 @@ def test_solution(problem_id, title, slug, filetype, code, test_input):
             _echoerr('cannot test the solution for ' + slug)
         return None
 
-    result = _check_result(res.json()['interpret_id'])
+    result = {}
+    _check_result(res.json()['interpret_id'], result)
+    _check_result(res.json()['interpret_expected_id'], result)
     result['testcase'] = test_input.split('\n')
     result['title'] = title
     return result
