@@ -444,7 +444,8 @@ def submit_solution(slug, filetype, code=None):
             _echoerr('cannot submit the solution for ' + slug)
         return None
 
-    result = _check_result(res.json()['submission_id'])
+    result = {}
+    _check_result(res.json()['submission_id'], result)
     result['title'] = problem['title']
     return result
 

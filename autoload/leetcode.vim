@@ -1083,7 +1083,7 @@ function! s:CheckRunCodeTask(timer) abort
             if task_name == 'test_solution'
                 if task_output['state'] == 'Finished' && 
                             \task_output['answer'] != task_output['expected_answer']
-                    let task_output['state'] = 'Wrong Answer'
+                    let task_output['state'] = 'WARNING: Maybe Wrong Answer'
                 endif
             elseif task_name == 'submit_solution'
                 if task_output['state'] == 'Finished'
