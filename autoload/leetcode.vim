@@ -538,7 +538,7 @@ function! s:HandleProblemListCR() abort
         endif
 
         execute 'rightbelow vnew ' . problem_file_name
-        call leetcode#ResetSolution(1)
+        call leetcode#ResetSolution(0)
     endif
 endfunction
 
