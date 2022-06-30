@@ -215,13 +215,17 @@ def _get_category_problems(category):
         # skip hidden questions
         if p['stat']['question__hide']:
             continue
+        if p['stat']['total_submitted'] == 0:
+            acRate = 0
+        else:
+            acRate = p['stat']['total_acs'] / p['stat']['total_submitted']
         problem = {'state': _state_to_flag(p['status']),
                    'id': p['stat']['question_id'],
                    'fid': p['stat']['frontend_question_id'],
                    'title': p['stat']['question__title'],
                    'slug': p['stat']['question__title_slug'],
                    'paid_only': p['paid_only'],
-                   'ac_rate': p['stat']['total_acs'] / p['stat']['total_submitted'],
+                   'ac_rate': acRate,
                    'level': _level_to_name(p['difficulty']['level']),
                    'favor': p['is_favor'],
                    'category': content['category_slug'],
