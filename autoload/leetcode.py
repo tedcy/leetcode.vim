@@ -344,7 +344,7 @@ def _check_result(submission_id, result):
 
         time.sleep(1)
 
-    if r.get('submission_id').find('interpret_expected') == -1:
+    if submission_id.find('expected') == -1:
         result['answer'] = r.get('code_answer', [])
         result['runtime'] = r['status_runtime']
         result['state'] = _status_to_name(r['status_code'])
