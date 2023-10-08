@@ -272,6 +272,7 @@ def get_problem(slug):
     stats
     difficulty
     codeDefinition
+    exampleTestcases
     sampleTestCase
     enableRunCode
     translatedContent
@@ -304,7 +305,7 @@ def get_problem(slug):
     for t in json.loads(q['codeDefinition']):
         problem['templates'][t['value']] = _break_code_lines(t['defaultCode'])
     problem['testable'] = q['enableRunCode']
-    problem['testcase'] = _split(q['sampleTestCase'])
+    problem['testcase'] = _split(q['exampleTestcases'])
     stats = json.loads(q['stats'])
     problem['total_accepted'] = stats['totalAccepted']
     problem['total_submission'] = stats['totalSubmission']
