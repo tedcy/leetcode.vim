@@ -345,7 +345,7 @@ def _check_result(submission_id, result):
 
         time.sleep(1)
 
-    if submission_id.find('expected') == -1:
+    if isinstance(submission_id, str) == False or submission_id.find('expected') == -1:
         result['answer'] = r.get('code_answer', [])
         result['runtime'] = r['status_runtime']
         result['state'] = _status_to_name(r['status_code'])
